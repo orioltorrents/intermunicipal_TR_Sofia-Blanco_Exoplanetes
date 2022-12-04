@@ -1,0 +1,80 @@
+---
+title: "Exoplanetes"
+author: "Oriol Torrents & Sofia Blanco"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries, include=FALSE}
+### Activem llibreries
+library(googlesheets4)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(cowplot)
+library(magick)
+library(dplyr)
+library(vegan)
+library(permute)
+library(lattice)
+library(tinytex)
+# llibreries de 3D plots
+library(rgl)
+library(plot3D)
+```
+
+
+```{r grafic, echo=FALSE} 
+url_dades_exoplanetes <- "https://docs.google.com/spreadsheets/d/1OwcuP6jxETBcC989xAj1F7aNbGmxH4jP1cepG296YQo"
+dades_exoplanetes <- googlesheets4::read_sheet(url_dades_exoplanetes, sheet = "data3")
+# Posem les variables x,y,z en cada eix
+x <- dades_exoplanetes$pl_orbsmax
+y <- dades_exoplanetes$pl_density
+#y <- dades_exoplanetes$st_rad
+z <- dades_exoplanetes$st_density
+#z <- dades_exoplanetes$st_mass
+
+# Avaluem la variable Planet_type que ha de ser factor
+planet_type <- dades_exoplanetes$Planet_Type
+
+# Si no és factor (mirant el environment), el convertim a factor
+factor_planet_type <-factor(planet_type)
+
+# Add a new column with color
+mycolors <- c('royalblue1', 'darkolivegreen1', 'coral')
+dades_exoplanetes$color <- mycolors[as.numeric(factor_planet_type)]
+
+# open 3d window
+open3d()
+
+# resize window
+par3d(windowRect = c(100, 100, 600, 600))
+
+# Plot
+plot3d( 
+  x, y, z,
+  type = "s",
+  size = 3,
+  col = dades_exoplanetes$color,
+  xlab="Eix de semiorbita major", ylab="Densitat del planeta", zlab="Densitat de l'estrella")
+
+rglwidget()
+
+points3D(x,y,z,
+        col = dades_exoplanetes$color,
+        xlab = "\nEix de semiòrbita major", ylab = "\nDensitat del planeta", zlab = "\nDensitat de l'estrella",
+        colkey = TRUE,
+        pch = 19)
+
+# preparant llegenda
+k <- sort(unique(planet_type))
+
+# add horitzontal legend
+legend3d(x=.1, y=.95, legend = k, pch = 8, col = mycolors, title='Tipus de Cold', horiz=TRUE)
+legend3d(x=.1, y=.95, legend = k, pch = 8, col = mycolors, title='Tipus de Cold', horiz=TRUE)
+```
